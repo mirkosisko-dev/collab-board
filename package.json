@@ -1,0 +1,31 @@
+{
+	"name": "CollabBoard",
+	"version": "1.0.0",
+	"private": true,
+	"packageManager": "pnpm@9.14.4",
+	"author": "Mirko Šiško <mirkosisko.dev@gmail.com>",
+	"keywoards": [
+		"monorepo",
+		"typescript",
+		"fullstack"
+	],
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"scripts": {
+		"preinstall": "npx only-allow pnpm",
+		"dev": "turbo dev",
+		"build": "turbo build",
+		"lint": "turbo lint",
+		"format": "prettier --write ."
+	},
+	"devDependecies": {
+		"prettier": "^3.7.4"
+	},
+	"devDependencies": {
+		"prettier": "^3.7.4",
+		"prettier-plugin-tailwindcss": "^0.7.2",
+		"turbo": "^2.6.3"
+	}
+}

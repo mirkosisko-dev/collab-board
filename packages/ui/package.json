@@ -1,0 +1,18 @@
+{
+	"name": "@repo/ui",
+	"version": "1.0.0",
+	"description": "",
+	"publishConfig": {
+		"directory": "src"
+	},
+	"keywords": [],
+	"license": "ISC",
+	"devDependencies": {
+		"@tailwindcss/postcss": "^4",
+		"tailwindcss": "^4.1.17"
+	},
+	"peerDependencies": {
+		"@tailwindcss/postcss": "^4",
+		"tailwindcss": "^4.1.17"
+	}
+}
