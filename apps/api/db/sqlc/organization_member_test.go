@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +18,7 @@ func createRandomOrganizationMember(t *testing.T) OrganizationMember {
 	arg := CreateOrganizationMemberParams{
 		OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
 		UserID:         pgtype.Int4{Int32: user.ID, Valid: true},
-		Role:           pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+		Role:           pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 	}
 
 	member, err := testQueries.CreateOrganizationMember(context.Background(), arg)
@@ -60,7 +60,7 @@ func TestGetOrganizationMemberByOrgAndUser(t *testing.T) {
 	arg := CreateOrganizationMemberParams{
 		OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
 		UserID:         pgtype.Int4{Int32: user.ID, Valid: true},
-		Role:           pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+		Role:           pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 	}
 
 	member1, err := testQueries.CreateOrganizationMember(context.Background(), arg)
@@ -81,7 +81,7 @@ func TestUpdateOrganizationMember(t *testing.T) {
 
 	arg := UpdateOrganizationMemberParams{
 		ID:   member1.ID,
-		Role: pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+		Role: pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 	}
 
 	member2, err := testQueries.UpdateOrganizationMember(context.Background(), arg)
@@ -117,7 +117,7 @@ func TestListOrganizationMembers(t *testing.T) {
 		arg := CreateOrganizationMemberParams{
 			OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
 			UserID:         pgtype.Int4{Int32: user.ID, Valid: true},
-			Role:           pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+			Role:           pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 		}
 		_, err := testQueries.CreateOrganizationMember(context.Background(), arg)
 		require.NoError(t, err)
@@ -125,8 +125,8 @@ func TestListOrganizationMembers(t *testing.T) {
 
 	arg := ListOrganizationMembersParams{
 		OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
-		Limit:         5,
-		Offset:        0,
+		Limit:          5,
+		Offset:         0,
 	}
 
 	members, err := testQueries.ListOrganizationMembers(context.Background(), arg)
@@ -138,4 +138,3 @@ func TestListOrganizationMembers(t *testing.T) {
 		require.Equal(t, organization.ID, member.OrganizationID.Int32)
 	}
 }
-

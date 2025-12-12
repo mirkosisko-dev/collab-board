@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -21,9 +21,9 @@ func createRandomTask(t *testing.T) Task {
 		BoardID:     pgtype.Int4{Int32: board.ID, Valid: true},
 		ColumnID:    pgtype.Int4{Int32: column.ID, Valid: true},
 		AssigneeID:  pgtype.Int4{Int32: assignee.ID, Valid: true},
-		Title:       pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
-		Description: pgtype.Text{String: util.GenerateRandomString(20), Valid: true},
-		Position:    pgtype.Int4{Int32: int32(util.GenerateRandomInt(1, 100)), Valid: true},
+		Title:       pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
+		Description: pgtype.Text{String: utils.GenerateRandomString(20), Valid: true},
+		Position:    pgtype.Int4{Int32: int32(utils.GenerateRandomInt(1, 100)), Valid: true},
 		CreatedBy:   pgtype.Int4{Int32: createdBy.ID, Valid: true},
 	}
 
@@ -76,9 +76,9 @@ func TestUpdateTask(t *testing.T) {
 		ID:          task1.ID,
 		ColumnID:    pgtype.Int4{Int32: newColumn.ID, Valid: true},
 		AssigneeID:  pgtype.Int4{Int32: newAssignee.ID, Valid: true},
-		Title:       pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
-		Description: pgtype.Text{String: util.GenerateRandomString(20), Valid: true},
-		Position:    pgtype.Int4{Int32: int32(util.GenerateRandomInt(1, 100)), Valid: true},
+		Title:       pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
+		Description: pgtype.Text{String: utils.GenerateRandomString(20), Valid: true},
+		Position:    pgtype.Int4{Int32: int32(utils.GenerateRandomInt(1, 100)), Valid: true},
 	}
 
 	task2, err := testQueries.UpdateTask(context.Background(), arg)
@@ -119,8 +119,8 @@ func TestListTasks(t *testing.T) {
 			BoardID:     pgtype.Int4{Int32: board.ID, Valid: true},
 			ColumnID:    pgtype.Int4{Int32: column.ID, Valid: true},
 			AssigneeID:  pgtype.Int4{Int32: assignee.ID, Valid: true},
-			Title:       pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
-			Description: pgtype.Text{String: util.GenerateRandomString(20), Valid: true},
+			Title:       pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
+			Description: pgtype.Text{String: utils.GenerateRandomString(20), Valid: true},
 			Position:    pgtype.Int4{Int32: int32(i + 1), Valid: true},
 			CreatedBy:   pgtype.Int4{Int32: createdBy.ID, Valid: true},
 		}
@@ -155,8 +155,8 @@ func TestListTasksByColumn(t *testing.T) {
 			BoardID:     pgtype.Int4{Int32: board.ID, Valid: true},
 			ColumnID:    pgtype.Int4{Int32: column.ID, Valid: true},
 			AssigneeID:  pgtype.Int4{Int32: assignee.ID, Valid: true},
-			Title:       pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
-			Description: pgtype.Text{String: util.GenerateRandomString(20), Valid: true},
+			Title:       pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
+			Description: pgtype.Text{String: utils.GenerateRandomString(20), Valid: true},
 			Position:    pgtype.Int4{Int32: int32(i + 1), Valid: true},
 			CreatedBy:   pgtype.Int4{Int32: createdBy.ID, Valid: true},
 		}

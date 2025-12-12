@@ -1,4 +1,4 @@
-package boardcolumn
+package organization
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/mirkosisko-dev/api/db"
-	"github.com/mirkosisko-dev/api/db/sqlc"
 	"github.com/mirkosisko-dev/api/utils"
 )
 
@@ -19,30 +18,33 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/board-column", h.handleCreateBoardColumn).Methods("POST")
+	router.HandleFunc("/organization", h.handleCreateOrganization).Methods("POST")
 }
 
-func (h *Handler) handleCreateBoardColumn(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) handleCreateOrganization(w http.ResponseWriter, r *http.Request) {
 	storage, err := pool.NewPostgreSQLStorage()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var payload sqlc.CreateBoardColumnParams
+	type createOrgPayload struct {
+		Name string `json:"name"`
+	}
+
+	var payload createOrgPayload
 	if err := utils.ParseJSON(r, &payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	_, err = storage.Query.CreateBoardColumn(context.Background(), sqlc.CreateBoardColumnParams{
-		BoardID:  payload.BoardID,
-		Position: payload.Position,
-		Name:     payload.Name,
-	})
+	_, err = storage.Query.CreateOrganization(context.Background(), payload.Name)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
 	utils.WriteJSON(w, http.StatusCreated, nil)
+}
+
+func (h *Handler) handleInviteToOrganization(w http.ResponseWriter, r *http.Request) {
 }

@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -17,7 +17,7 @@ func createRandomDocument(t *testing.T) Document {
 
 	arg := CreateDocumentParams{
 		OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
-		Title:          pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+		Title:          pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 		CreatedBy:      pgtype.Int4{Int32: user.ID, Valid: true},
 	}
 
@@ -58,7 +58,7 @@ func TestUpdateDocument(t *testing.T) {
 
 	arg := UpdateDocumentParams{
 		ID:    document1.ID,
-		Title: pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+		Title: pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 	}
 
 	document2, err := testQueries.UpdateDocument(context.Background(), arg)
@@ -93,7 +93,7 @@ func TestListDocuments(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		arg := CreateDocumentParams{
 			OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
-			Title:          pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+			Title:          pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 			CreatedBy:      pgtype.Int4{Int32: user.ID, Valid: true},
 		}
 		_, err := testQueries.CreateDocument(context.Background(), arg)

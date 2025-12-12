@@ -3,7 +3,7 @@
 //   sqlc v1.27.0
 // source: user.sql
 
-package db
+package sqlc
 
 import (
 	"context"
@@ -51,6 +51,24 @@ WHERE id = $1
 
 func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Email,
+		&i.PasswordHash,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, name, email, password_hash, created_at FROM users
+WHERE email = $1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(
 		&i.ID,

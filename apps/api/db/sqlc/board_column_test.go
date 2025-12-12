@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,8 +15,8 @@ func createRandomBoardColumn(t *testing.T) BoardColumn {
 
 	arg := CreateBoardColumnParams{
 		BoardID:  pgtype.Int4{Int32: board.ID, Valid: true},
-		Name:     pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
-		Position: pgtype.Int4{Int32: int32(util.GenerateRandomInt(1, 100)), Valid: true},
+		Name:     pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
+		Position: pgtype.Int4{Int32: int32(utils.GenerateRandomInt(1, 100)), Valid: true},
 	}
 
 	column, err := testQueries.CreateBoardColumn(context.Background(), arg)
@@ -54,8 +54,8 @@ func TestUpdateBoardColumn(t *testing.T) {
 
 	arg := UpdateBoardColumnParams{
 		ID:       column1.ID,
-		Name:     pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
-		Position: pgtype.Int4{Int32: int32(util.GenerateRandomInt(1, 100)), Valid: true},
+		Name:     pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
+		Position: pgtype.Int4{Int32: int32(utils.GenerateRandomInt(1, 100)), Valid: true},
 	}
 
 	column2, err := testQueries.UpdateBoardColumn(context.Background(), arg)
@@ -89,7 +89,7 @@ func TestListBoardColumns(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		arg := CreateBoardColumnParams{
 			BoardID:  pgtype.Int4{Int32: board.ID, Valid: true},
-			Name:     pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+			Name:     pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 			Position: pgtype.Int4{Int32: int32(i + 1), Valid: true},
 		}
 		_, err := testQueries.CreateBoardColumn(context.Background(), arg)

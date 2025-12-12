@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -6,15 +6,15 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomUser(t *testing.T) User {
 	arg := CreateUserParams{
-		Name:         util.GenerateRandomString(4),
-		Email:        util.GenerateRandomEmail(10),
-		PasswordHash: util.GenerateRandomString(8),
+		Name:         utils.GenerateRandomString(4),
+		Email:        utils.GenerateRandomEmail(10),
+		PasswordHash: utils.GenerateRandomString(8),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), arg)
@@ -54,7 +54,7 @@ func TestUpdateUser(t *testing.T) {
 
 	arg := UpdateUserParams{
 		ID:    user1.ID,
-		Name:  util.GenerateRandomString(4),
+		Name:  utils.GenerateRandomString(4),
 		Email: user1.Email,
 	}
 

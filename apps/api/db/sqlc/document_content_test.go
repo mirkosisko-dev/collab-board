@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -7,14 +7,14 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomDocumentContent(t *testing.T) DocumentContent {
 	document := createRandomDocument(t)
 
-	ydocState := []byte(util.GenerateRandomString(20))
+	ydocState := []byte(utils.GenerateRandomString(20))
 
 	arg := CreateDocumentContentParams{
 		DocumentID: pgtype.Int4{Int32: document.ID, Valid: true},
@@ -52,7 +52,7 @@ func TestGetDocumentContent(t *testing.T) {
 func TestUpdateDocumentContent(t *testing.T) {
 	content1 := createRandomDocumentContent(t)
 
-	newYdocState := []byte(util.GenerateRandomString(25))
+	newYdocState := []byte(utils.GenerateRandomString(25))
 
 	arg := UpdateDocumentContentParams{
 		DocumentID: content1.DocumentID,
@@ -81,4 +81,3 @@ func TestDeleteDocumentContent(t *testing.T) {
 	require.EqualError(t, err, pgx.ErrNoRows.Error())
 	require.Empty(t, content2)
 }
-

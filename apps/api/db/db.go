@@ -7,12 +7,12 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mirkosisko-dev/api/config"
-	dbsqlc "github.com/mirkosisko-dev/api/db/sqlc"
+	sqlc "github.com/mirkosisko-dev/api/db/sqlc"
 )
 
 type Database struct {
 	Pool  *pgxpool.Pool
-	Query *dbsqlc.Queries
+	Query *sqlc.Queries
 }
 
 func NewPostgreSQLStorage() (*Database, error) {
@@ -26,7 +26,7 @@ func NewPostgreSQLStorage() (*Database, error) {
 		log.Fatal(err)
 	}
 
-	query := dbsqlc.New(pool)
+	query := sqlc.New(pool)
 
 	db := Database{
 		Pool:  pool,

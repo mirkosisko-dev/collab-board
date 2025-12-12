@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
 func createRandomOrganization(t *testing.T) Organization {
-	orgName := util.GenerateRandomString(5)
+	orgName := utils.GenerateRandomString(5)
 
 	organization, err := testQueries.CreateOrganization(context.Background(), orgName)
 	require.NoError(t, err)
@@ -46,7 +46,7 @@ func TestUpdateOrganization(t *testing.T) {
 
 	arg := UpdateOrganizationParams{
 		ID:   organization1.ID,
-		Name: util.GenerateRandomString(5),
+		Name: utils.GenerateRandomString(5),
 	}
 
 	organization2, err := testQueries.UpdateOrganization(context.Background(), arg)

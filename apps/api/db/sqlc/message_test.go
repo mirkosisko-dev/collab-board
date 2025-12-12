@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -22,7 +22,7 @@ func createRandomMessage(t *testing.T) Message {
 		OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
 		UserID:         pgtype.Int4{Int32: user.ID, Valid: true},
 		DocumentID:     pgtype.Int4{Int32: document.ID, Valid: true},
-		Content:        pgtype.Text{String: util.GenerateRandomString(20), Valid: true},
+		Content:        pgtype.Text{String: utils.GenerateRandomString(20), Valid: true},
 	}
 
 	message, err := testQueries.CreateMessage(context.Background(), arg)
@@ -66,7 +66,7 @@ func TestUpdateMessage(t *testing.T) {
 
 	arg := UpdateMessageParams{
 		ID:      message1.ID,
-		Content: pgtype.Text{String: util.GenerateRandomString(20), Valid: true},
+		Content: pgtype.Text{String: utils.GenerateRandomString(20), Valid: true},
 	}
 
 	message2, err := testQueries.UpdateMessage(context.Background(), arg)
@@ -108,7 +108,7 @@ func TestListMessages(t *testing.T) {
 			OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
 			UserID:         pgtype.Int4{Int32: user.ID, Valid: true},
 			DocumentID:     pgtype.Int4{Int32: document.ID, Valid: true},
-			Content:        pgtype.Text{String: util.GenerateRandomString(20), Valid: true},
+			Content:        pgtype.Text{String: utils.GenerateRandomString(20), Valid: true},
 		}
 		_, err := testQueries.CreateMessage(context.Background(), arg)
 		require.NoError(t, err)
@@ -142,7 +142,7 @@ func TestListMessagesByOrganization(t *testing.T) {
 			OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
 			UserID:         pgtype.Int4{Int32: user.ID, Valid: true},
 			DocumentID:     pgtype.Int4{Int32: document.ID, Valid: true},
-			Content:        pgtype.Text{String: util.GenerateRandomString(20), Valid: true},
+			Content:        pgtype.Text{String: utils.GenerateRandomString(20), Valid: true},
 		}
 		_, err := testQueries.CreateMessage(context.Background(), arg)
 		require.NoError(t, err)

@@ -1,4 +1,4 @@
-package db
+package sqlc
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mirkosisko-dev/api/util"
+	"github.com/mirkosisko-dev/api/utils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,7 +16,7 @@ func createRandomBoard(t *testing.T) Board {
 
 	arg := CreateBoardParams{
 		OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
-		Name:           pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+		Name:           pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 		CreatedBy:      pgtype.Int4{Int32: user.ID, Valid: true},
 	}
 
@@ -55,7 +55,7 @@ func TestUpdateBoard(t *testing.T) {
 
 	arg := UpdateBoardParams{
 		ID:   board1.ID,
-		Name: pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+		Name: pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 	}
 
 	board2, err := testQueries.UpdateBoard(context.Background(), arg)
@@ -90,7 +90,7 @@ func TestListBoards(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		arg := CreateBoardParams{
 			OrganizationID: pgtype.Int4{Int32: organization.ID, Valid: true},
-			Name:           pgtype.Text{String: util.GenerateRandomString(10), Valid: true},
+			Name:           pgtype.Text{String: utils.GenerateRandomString(10), Valid: true},
 			CreatedBy:      pgtype.Int4{Int32: user.ID, Valid: true},
 		}
 		_, err := testQueries.CreateBoard(context.Background(), arg)
@@ -112,4 +112,3 @@ func TestListBoards(t *testing.T) {
 		require.Equal(t, organization.ID, board.OrganizationID.Int32)
 	}
 }
-
