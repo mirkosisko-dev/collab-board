@@ -16,6 +16,7 @@ import (
 	organizationmember "github.com/mirkosisko-dev/api/internal/api/service/organization_member"
 	"github.com/mirkosisko-dev/api/internal/api/service/task"
 	"github.com/mirkosisko-dev/api/internal/api/service/user"
+	"github.com/mirkosisko-dev/api/internal/middleware"
 )
 
 type APIServer struct {
@@ -69,5 +70,7 @@ func (s *APIServer) Run() error {
 
 	log.Println("Listening on", s.addr)
 
-	return http.ListenAndServe(s.addr, subrouter)
+	handler := middleware.CORS(router)
+
+	return http.ListenAndServe(s.addr, handler)
 }
