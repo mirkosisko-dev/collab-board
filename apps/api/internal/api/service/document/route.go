@@ -1,8 +1,6 @@
 package document
 
 import (
-	"context"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,10 +10,11 @@ import (
 )
 
 type Handler struct {
+	storage *pool.Database
 }
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(storage *pool.Database) *Handler {
+	return &Handler{storage: storage}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
@@ -23,10 +22,6 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleCreateDocument(w http.ResponseWriter, r *http.Request) {
-	storage, err := pool.NewPostgreSQLStorage()
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	var payload sqlc.CreateDocumentParams
 	if err := utils.ParseJSON(r, &payload); err != nil {
@@ -34,7 +29,7 @@ func (h *Handler) handleCreateDocument(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = storage.Query.CreateDocument(context.Background(), sqlc.CreateDocumentParams{
+	_, err := h.storage.Query.CreateDocument(r.Context(), sqlc.CreateDocumentParams{
 		OrganizationID: payload.OrganizationID,
 		Title:          payload.Title,
 	})

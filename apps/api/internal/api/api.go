@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -30,34 +31,40 @@ func NewAPIServer(addr string, db *pool.Database) *APIServer {
 }
 
 func (s *APIServer) Run() error {
+	storage, err := pool.NewPostgreSQLStorage()
+	if err != nil {
+		fmt.Errorf("database unavailable")
+		return err
+	}
+
 	router := mux.NewRouter()
 	subrouter := router.PathPrefix("/api/v1").Subrouter()
 
-	boardHandler := board.NewHandler()
+	boardHandler := board.NewHandler(storage)
 	boardHandler.RegisterRoutes(subrouter)
 
-	boardColumnHandler := boardcolumn.NewHandler()
+	boardColumnHandler := boardcolumn.NewHandler(storage)
 	boardColumnHandler.RegisterRoutes(subrouter)
 
-	documentHandler := document.NewHandler()
+	documentHandler := document.NewHandler(storage)
 	documentHandler.RegisterRoutes(subrouter)
 
-	documentContentHandler := documentcontent.NewHandler()
+	documentContentHandler := documentcontent.NewHandler(storage)
 	documentContentHandler.RegisterRoutes(subrouter)
 
-	messageHandler := message.NewHandler()
+	messageHandler := message.NewHandler(storage)
 	messageHandler.RegisterRoutes(subrouter)
 
-	organizationHandler := organization.NewHandler()
+	organizationHandler := organization.NewHandler(storage)
 	organizationHandler.RegisterRoutes(subrouter)
 
-	organizationMemberHandler := organizationmember.NewHandler()
+	organizationMemberHandler := organizationmember.NewHandler(storage)
 	organizationMemberHandler.RegisterRoutes(subrouter)
 
-	taskHandler := task.NewHandler()
+	taskHandler := task.NewHandler(storage)
 	taskHandler.RegisterRoutes(subrouter)
 
-	userHandler := user.NewHandler()
+	userHandler := user.NewHandler(storage)
 	userHandler.RegisterRoutes(subrouter)
 
 	log.Println("Listening on", s.addr)

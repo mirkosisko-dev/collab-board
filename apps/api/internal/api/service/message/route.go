@@ -1,8 +1,6 @@
 package message
 
 import (
-	"context"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -12,10 +10,11 @@ import (
 )
 
 type Handler struct {
+	storage *pool.Database
 }
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(storage *pool.Database) *Handler {
+	return &Handler{storage: storage}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
@@ -23,11 +22,6 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleCreateMessage(w http.ResponseWriter, r *http.Request) {
-	storage, err := pool.NewPostgreSQLStorage()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	var payload sqlc.CreateMessageParams
 
 	if err := utils.ParseJSON(r, &payload); err != nil {
@@ -35,7 +29,7 @@ func (h *Handler) handleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = storage.Query.CreateMessage(context.Background(), sqlc.CreateMessageParams{
+	_, err := h.storage.Query.CreateMessage(r.Context(), sqlc.CreateMessageParams{
 		BoardID:        payload.BoardID,
 		OrganizationID: payload.OrganizationID,
 		UserID:         payload.UserID,

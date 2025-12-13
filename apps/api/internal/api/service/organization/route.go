@@ -1,8 +1,6 @@
 package organization
 
 import (
-	"context"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -11,10 +9,11 @@ import (
 )
 
 type Handler struct {
+	storage *pool.Database
 }
 
-func NewHandler() *Handler {
-	return &Handler{}
+func NewHandler(storage *pool.Database) *Handler {
+	return &Handler{storage: storage}
 }
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
@@ -22,11 +21,6 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleCreateOrganization(w http.ResponseWriter, r *http.Request) {
-	storage, err := pool.NewPostgreSQLStorage()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	type createOrgPayload struct {
 		Name string `json:"name"`
 	}
@@ -37,7 +31,7 @@ func (h *Handler) handleCreateOrganization(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	_, err = storage.Query.CreateOrganization(context.Background(), payload.Name)
+	_, err := h.storage.Query.CreateOrganization(r.Context(), payload.Name)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
