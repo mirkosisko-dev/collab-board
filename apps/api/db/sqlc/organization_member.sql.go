@@ -20,7 +20,7 @@ RETURNING id, organization_id, user_id, role, created_at
 type CreateOrganizationMemberParams struct {
 	OrganizationID pgtype.Int4
 	UserID         pgtype.Int4
-	Role           pgtype.Text
+	Role           OrganizationRole
 }
 
 func (q *Queries) CreateOrganizationMember(ctx context.Context, arg CreateOrganizationMemberParams) (OrganizationMember, error) {
@@ -136,7 +136,7 @@ RETURNING id, organization_id, user_id, role, created_at
 
 type UpdateOrganizationMemberParams struct {
 	ID   int32
-	Role pgtype.Text
+	Role OrganizationRole
 }
 
 func (q *Queries) UpdateOrganizationMember(ctx context.Context, arg UpdateOrganizationMemberParams) (OrganizationMember, error) {

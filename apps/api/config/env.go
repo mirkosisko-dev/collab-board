@@ -9,9 +9,11 @@ import (
 )
 
 type Config struct {
-	DatabaseUrl            string
-	JWTExpirationInSeconds int64
-	JWTSecret              string
+	DatabaseUrl                     string
+	JWTExpirationInSeconds          int64
+	JWTSecret                       string
+	RefreshTokenExpirationInSeconds int64
+	RefreshTokenSecret              string
 }
 
 var Envs = initConfig()
@@ -20,21 +22,20 @@ func initConfig() Config {
 	loadDotEnv()
 
 	return Config{
-		DatabaseUrl:            getEnv("DATABASE_URL", "postgres://admin:admin@localhost:5432/collab_board?sslmode=disable"),
-		JWTExpirationInSeconds: getEnvAsInt("JWT_EXP", 3600*24*7),
-		JWTSecret:              getEnv("JWT_SECRET", "not-a-secret-any-more"),
+		DatabaseUrl:                     getEnv("DATABASE_URL", "postgres://admin:admin@localhost:5432/collab_board?sslmode=disable"),
+		JWTExpirationInSeconds:          getEnvAsInt("JWT_EXP", 3600*24*7),
+		JWTSecret:                       getEnv("JWT_SECRET", "not-a-secret-any-more"),
+		RefreshTokenExpirationInSeconds: getEnvAsInt("RT_EXP", 3600*24*100),
+		RefreshTokenSecret:              getEnv("RT_SECRET", "not-a-secret-any-more-2"),
 	}
 }
 
-// loadDotEnv walks up from the current working directory to locate a .env file.
-// This covers running the binary from nested folders (e.g., apps/api/cmd/...).
 func loadDotEnv() {
 	wd, err := os.Getwd()
 	if err != nil {
 		return
 	}
 
-	// Try up to 6 levels up to be safe in nested dirs
 	for i := 0; i < 6; i++ {
 		path := filepath.Join(wd, ".env")
 		if _, err := os.Stat(path); err == nil {

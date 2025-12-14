@@ -2,11 +2,9 @@ package user
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/mirkosisko-dev/api/config"
 	"github.com/mirkosisko-dev/api/db"
 	"github.com/mirkosisko-dev/api/db/sqlc"
 	"github.com/mirkosisko-dev/api/internal/api/service/auth"
@@ -22,9 +20,14 @@ func NewHandler(storage *pool.Database) *Handler {
 	return &Handler{storage: storage}
 }
 
-func (h *Handler) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/login", h.handleLogin).Methods("POST")
-	router.HandleFunc("/register", h.handleRegister).Methods("POST")
+func (h *Handler) RegisterPublicRoutes(r *mux.Router) {
+	r.HandleFunc("/auth/register", h.handleRegister).Methods(http.MethodPost)
+	r.HandleFunc("/auth/login", h.handleLogin).Methods(http.MethodPost)
+}
+
+func (h *Handler) RegisterProtectedRoutes(r *mux.Router) {
+	// r.HandleFunc("/users/me", h.handleMe).Methods(http.MethodGet)
+	// r.HandleFunc("/users/me/password", h.handleUpdatePassword).Methods(http.MethodPatch)
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -46,8 +49,7 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	secret := []byte(config.Envs.JWTSecret)
-	token, err := auth.CreateJWT(secret, int(user.ID))
+	token, err := auth.CreateJWT(int(user.ID))
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
@@ -57,11 +59,6 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
-	storage, err := pool.NewPostgreSQLStorage()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	var payload types.RegisterUserPayload
 
 	if err := utils.ParseJSON(r, &payload); err != nil {
@@ -69,7 +66,7 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = storage.Query.GetUserByEmail(r.Context(), payload.Email)
+	_, err := h.storage.Query.GetUserByEmail(r.Context(), payload.Email)
 	if err == nil {
 		utils.WriteError(w, http.StatusBadRequest, fmt.Errorf("user with email %s already exists", payload.Email))
 		return
@@ -81,7 +78,7 @@ func (h *Handler) handleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = storage.Query.CreateUser(r.Context(), sqlc.CreateUserParams{
+	_, err = h.storage.Query.CreateUser(r.Context(), sqlc.CreateUserParams{
 		Name:         payload.Name,
 		Email:        payload.Email,
 		PasswordHash: hashedPassword,

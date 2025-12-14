@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -32,41 +31,41 @@ func NewAPIServer(addr string, db *pool.Database) *APIServer {
 }
 
 func (s *APIServer) Run() error {
-	storage, err := pool.NewPostgreSQLStorage()
-	if err != nil {
-		fmt.Errorf("database unavailable")
-		return err
-	}
-
 	router := mux.NewRouter()
-	subrouter := router.PathPrefix("/api/v1").Subrouter()
+	subrouter := router.PathPrefix("/v1").Subrouter()
 
-	boardHandler := board.NewHandler(storage)
-	boardHandler.RegisterRoutes(subrouter)
+	public := subrouter.NewRoute().Subrouter()
+	protected := subrouter.NewRoute().Subrouter()
 
-	boardColumnHandler := boardcolumn.NewHandler(storage)
-	boardColumnHandler.RegisterRoutes(subrouter)
+	protected.Use(middleware.AuthenticationMiddleware)
 
-	documentHandler := document.NewHandler(storage)
-	documentHandler.RegisterRoutes(subrouter)
+	boardHandler := board.NewHandler(s.db)
+	boardHandler.RegisterRoutes(protected)
 
-	documentContentHandler := documentcontent.NewHandler(storage)
-	documentContentHandler.RegisterRoutes(subrouter)
+	boardColumnHandler := boardcolumn.NewHandler(s.db)
+	boardColumnHandler.RegisterRoutes(protected)
 
-	messageHandler := message.NewHandler(storage)
-	messageHandler.RegisterRoutes(subrouter)
+	documentHandler := document.NewHandler(s.db)
+	documentHandler.RegisterRoutes(protected)
 
-	organizationHandler := organization.NewHandler(storage)
-	organizationHandler.RegisterRoutes(subrouter)
+	documentContentHandler := documentcontent.NewHandler(s.db)
+	documentContentHandler.RegisterRoutes(protected)
 
-	organizationMemberHandler := organizationmember.NewHandler(storage)
-	organizationMemberHandler.RegisterRoutes(subrouter)
+	messageHandler := message.NewHandler(s.db)
+	messageHandler.RegisterRoutes(protected)
 
-	taskHandler := task.NewHandler(storage)
-	taskHandler.RegisterRoutes(subrouter)
+	organizationHandler := organization.NewHandler(s.db)
+	organizationHandler.RegisterRoutes(protected)
 
-	userHandler := user.NewHandler(storage)
-	userHandler.RegisterRoutes(subrouter)
+	organizationMemberHandler := organizationmember.NewHandler(s.db)
+	organizationMemberHandler.RegisterRoutes(protected)
+
+	taskHandler := task.NewHandler(s.db)
+	taskHandler.RegisterRoutes(protected)
+
+	userHandler := user.NewHandler(s.db)
+	userHandler.RegisterPublicRoutes(public)
+	userHandler.RegisterProtectedRoutes(protected)
 
 	log.Println("Listening on", s.addr)
 

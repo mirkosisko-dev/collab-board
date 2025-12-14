@@ -3,82 +3,80 @@ package auth
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
-	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/mirkosisko-dev/api/config"
-	pool "github.com/mirkosisko-dev/api/db"
 	"github.com/mirkosisko-dev/api/utils"
 )
 
 type contextKey string
 
-const UserKey contextKey = "userID"
+const userKey contextKey = "sub"
 
-func CreateJWT(secret []byte, userID int) (string, error) {
-	expiration := time.Second * time.Duration(config.Envs.JWTExpirationInSeconds)
+func CreateJWT(userID int) (string, error) {
+	exp := time.Now().Add(time.Second * time.Duration(config.Envs.JWTExpirationInSeconds)).Unix()
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{"userID": strconv.Itoa(userID), "expiredAt": expiration})
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"sub": userID,
+			"iss": "collab-board",
+			"exp": exp,
+			"iat": time.Now().Unix(),
+		})
 
-	tokenString, err := token.SignedString(secret)
+	jwt, err := token.SignedString([]byte(config.Envs.JWTSecret))
 	if err != nil {
 		return "", err
 	}
 
-	return tokenString, nil
+	return jwt, nil
 }
 
-func WithJWTAuth(handlerFunc http.HandlerFunc, store *pool.Database) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		tokenString := getTokenFromRequest(r)
+func CreateRefreshToken(userID int) (string, error) {
+	exp := time.Now().Add(time.Second * time.Duration(config.Envs.RefreshTokenExpirationInSeconds)).Unix()
 
-		token, err := validateToken(tokenString)
-		if err != nil {
-			log.Printf("failed to validate token: %v", err)
-			permissionDenied(w)
-			return
-		}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"sub": userID,
+			"iss": "collab-board",
+			"exp": exp,
+			"iat": time.Now().Unix(),
+		})
 
-		if !token.Valid {
-			log.Println("invalid token")
-			permissionDenied(w)
-			return
-		}
-
-		claims := token.Claims.(jwt.MapClaims)
-		str := claims["userID"].(string)
-
-		userID, err := strconv.Atoi(str)
-
-		user, err := store.Query.GetUser(context.Background(), int32(userID))
-		if err != nil {
-			log.Printf("failed to get user by id: %v", err)
-			permissionDenied(w)
-			return
-		}
-
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, UserKey, user.ID)
-		r = r.WithContext(ctx)
-
-		handlerFunc(w, r)
+	rt, err := token.SignedString([]byte(config.Envs.RefreshTokenSecret))
+	if err != nil {
+		return "", err
 	}
+	return rt, err
 }
 
-func getTokenFromRequest(r *http.Request) string {
-	tokenAuth := r.Header.Get("Authorization")
+func IsAuthorized(requestToken string, secret string) (bool, error) {
+	_, err := jwt.Parse(requestToken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(secret), nil
+	})
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
 
-	if tokenAuth != "" {
-		return tokenAuth
+func GetTokenFromRequest(r *http.Request) (string, bool) {
+	token := strings.TrimSpace(r.Header.Get("Authorization"))
+
+	if token == "" || token == `""` {
+		return "", false
 	}
 
-	return ""
+	return token, true
 }
 
-func validateToken(t string) (*jwt.Token, error) {
+func ValidateToken(t string) (*jwt.Token, error) {
 	return jwt.Parse(t, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
@@ -88,15 +86,15 @@ func validateToken(t string) (*jwt.Token, error) {
 	})
 }
 
-func permissionDenied(w http.ResponseWriter) {
+func PermissionDenied(w http.ResponseWriter) {
 	utils.WriteError(w, http.StatusForbidden, fmt.Errorf("permission denied"))
 }
 
-func GetUserIDFromContext(ctx context.Context) int {
-	userID, ok := ctx.Value(UserKey).(int)
-	if !ok {
-		return -1
-	}
+func WithUserID(ctx context.Context, userID int) context.Context {
+	return context.WithValue(ctx, userKey, userID)
+}
 
-	return userID
+func GetUserIDFromContext(ctx context.Context) (int, bool) {
+	userID, ok := ctx.Value(userKey).(int)
+	return userID, ok
 }

@@ -5,8 +5,99 @@
 package sqlc
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type OrganizationInviteStatus string
+
+const (
+	OrganizationInviteStatusPending  OrganizationInviteStatus = "pending"
+	OrganizationInviteStatusAccepted OrganizationInviteStatus = "accepted"
+	OrganizationInviteStatusDeclined OrganizationInviteStatus = "declined"
+	OrganizationInviteStatusCanceled OrganizationInviteStatus = "canceled"
+	OrganizationInviteStatusExpired  OrganizationInviteStatus = "expired"
+)
+
+func (e *OrganizationInviteStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrganizationInviteStatus(s)
+	case string:
+		*e = OrganizationInviteStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrganizationInviteStatus: %T", src)
+	}
+	return nil
+}
+
+type NullOrganizationInviteStatus struct {
+	OrganizationInviteStatus OrganizationInviteStatus
+	Valid                    bool // Valid is true if OrganizationInviteStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrganizationInviteStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrganizationInviteStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrganizationInviteStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrganizationInviteStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrganizationInviteStatus), nil
+}
+
+type OrganizationRole string
+
+const (
+	OrganizationRoleOwner  OrganizationRole = "owner"
+	OrganizationRoleAdmin  OrganizationRole = "admin"
+	OrganizationRoleMember OrganizationRole = "member"
+)
+
+func (e *OrganizationRole) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OrganizationRole(s)
+	case string:
+		*e = OrganizationRole(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OrganizationRole: %T", src)
+	}
+	return nil
+}
+
+type NullOrganizationRole struct {
+	OrganizationRole OrganizationRole
+	Valid            bool // Valid is true if OrganizationRole is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOrganizationRole) Scan(value interface{}) error {
+	if value == nil {
+		ns.OrganizationRole, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OrganizationRole.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOrganizationRole) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OrganizationRole), nil
+}
 
 type Board struct {
 	ID             int32
@@ -53,11 +144,23 @@ type Organization struct {
 	CreatedAt pgtype.Timestamp
 }
 
+type OrganizationInvite struct {
+	ID              int32
+	OrganizationID  pgtype.Int4
+	InvitedByUserID pgtype.Int4
+	InvitedUserID   pgtype.Int4
+	Role            OrganizationRole
+	Status          OrganizationInviteStatus
+	ExpiresAt       pgtype.Timestamp
+	CreatedAt       pgtype.Timestamp
+	RespondedAt     pgtype.Timestamp
+}
+
 type OrganizationMember struct {
 	ID             int32
 	OrganizationID pgtype.Int4
 	UserID         pgtype.Int4
-	Role           pgtype.Text
+	Role           OrganizationRole
 	CreatedAt      pgtype.Timestamp
 }
 
