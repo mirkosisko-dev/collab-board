@@ -18,13 +18,13 @@ RETURNING id, board_id, column_id, assignee_id, title, description, position, cr
 `
 
 type CreateTaskParams struct {
-	BoardID     pgtype.Int4
-	ColumnID    pgtype.Int4
-	AssigneeID  pgtype.Int4
-	Title       pgtype.Text
+	BoardID     pgtype.UUID
+	ColumnID    pgtype.UUID
+	AssigneeID  pgtype.UUID
+	Title       string
 	Description pgtype.Text
-	Position    pgtype.Int4
-	CreatedBy   pgtype.Int4
+	Position    int32
+	CreatedBy   pgtype.UUID
 }
 
 func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error) {
@@ -57,7 +57,7 @@ DELETE FROM tasks
 WHERE id = $1
 `
 
-func (q *Queries) DeleteTask(ctx context.Context, id int32) error {
+func (q *Queries) DeleteTask(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteTask, id)
 	return err
 }
@@ -67,7 +67,7 @@ SELECT id, board_id, column_id, assignee_id, title, description, position, creat
 WHERE id = $1
 `
 
-func (q *Queries) GetTask(ctx context.Context, id int32) (Task, error) {
+func (q *Queries) GetTask(ctx context.Context, id pgtype.UUID) (Task, error) {
 	row := q.db.QueryRow(ctx, getTask, id)
 	var i Task
 	err := row.Scan(
@@ -93,7 +93,7 @@ OFFSET $3
 `
 
 type ListTasksParams struct {
-	BoardID pgtype.Int4
+	BoardID pgtype.UUID
 	Limit   int32
 	Offset  int32
 }
@@ -137,7 +137,7 @@ OFFSET $3
 `
 
 type ListTasksByColumnParams struct {
-	ColumnID pgtype.Int4
+	ColumnID pgtype.UUID
 	Limit    int32
 	Offset   int32
 }
@@ -180,12 +180,12 @@ RETURNING id, board_id, column_id, assignee_id, title, description, position, cr
 `
 
 type UpdateTaskParams struct {
-	ID          int32
-	ColumnID    pgtype.Int4
-	AssigneeID  pgtype.Int4
-	Title       pgtype.Text
+	ID          pgtype.UUID
+	ColumnID    pgtype.UUID
+	AssigneeID  pgtype.UUID
+	Title       string
 	Description pgtype.Text
-	Position    pgtype.Int4
+	Position    int32
 }
 
 func (q *Queries) UpdateTask(ctx context.Context, arg UpdateTaskParams) (Task, error) {

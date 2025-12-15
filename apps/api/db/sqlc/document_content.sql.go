@@ -18,7 +18,7 @@ RETURNING document_id, ydoc_state, updated_at
 `
 
 type CreateDocumentContentParams struct {
-	DocumentID pgtype.Int4
+	DocumentID pgtype.UUID
 	YdocState  []byte
 }
 
@@ -34,7 +34,7 @@ DELETE FROM document_content
 WHERE document_id = $1
 `
 
-func (q *Queries) DeleteDocumentContent(ctx context.Context, documentID pgtype.Int4) error {
+func (q *Queries) DeleteDocumentContent(ctx context.Context, documentID pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteDocumentContent, documentID)
 	return err
 }
@@ -44,7 +44,7 @@ SELECT document_id, ydoc_state, updated_at FROM document_content
 WHERE document_id = $1
 `
 
-func (q *Queries) GetDocumentContent(ctx context.Context, documentID pgtype.Int4) (DocumentContent, error) {
+func (q *Queries) GetDocumentContent(ctx context.Context, documentID pgtype.UUID) (DocumentContent, error) {
 	row := q.db.QueryRow(ctx, getDocumentContent, documentID)
 	var i DocumentContent
 	err := row.Scan(&i.DocumentID, &i.YdocState, &i.UpdatedAt)
@@ -59,7 +59,7 @@ RETURNING document_id, ydoc_state, updated_at
 `
 
 type UpdateDocumentContentParams struct {
-	DocumentID pgtype.Int4
+	DocumentID pgtype.UUID
 	YdocState  []byte
 }
 

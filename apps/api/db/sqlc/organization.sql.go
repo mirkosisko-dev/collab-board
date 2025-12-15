@@ -7,6 +7,8 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createOrganization = `-- name: CreateOrganization :one
@@ -27,7 +29,7 @@ DELETE FROM organizations
 WHERE id = $1
 `
 
-func (q *Queries) DeleteOrganization(ctx context.Context, id int32) error {
+func (q *Queries) DeleteOrganization(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteOrganization, id)
 	return err
 }
@@ -37,7 +39,7 @@ SELECT id, name, created_at FROM organizations
 WHERE id = $1
 `
 
-func (q *Queries) GetOrganization(ctx context.Context, id int32) (Organization, error) {
+func (q *Queries) GetOrganization(ctx context.Context, id pgtype.UUID) (Organization, error) {
 	row := q.db.QueryRow(ctx, getOrganization, id)
 	var i Organization
 	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
@@ -84,7 +86,7 @@ RETURNING id, name, created_at
 `
 
 type UpdateOrganizationParams struct {
-	ID   int32
+	ID   pgtype.UUID
 	Name string
 }
 

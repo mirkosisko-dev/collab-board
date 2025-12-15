@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/mirkosisko-dev/api/config"
 	"github.com/mirkosisko-dev/api/utils"
 )
@@ -16,12 +17,12 @@ type contextKey string
 
 const userKey contextKey = "sub"
 
-func CreateJWT(userID int) (string, error) {
+func CreateJWT(userID uuid.UUID) (string, error) {
 	exp := time.Now().Add(time.Second * time.Duration(config.Envs.JWTExpirationInSeconds)).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"sub": userID,
+			"sub": userID.String(),
 			"iss": "collab-board",
 			"exp": exp,
 			"iat": time.Now().Unix(),
@@ -90,11 +91,11 @@ func PermissionDenied(w http.ResponseWriter) {
 	utils.WriteError(w, http.StatusForbidden, fmt.Errorf("permission denied"))
 }
 
-func WithUserID(ctx context.Context, userID int) context.Context {
+func WithUserID(ctx context.Context, userID uuid.UUID) context.Context {
 	return context.WithValue(ctx, userKey, userID)
 }
 
-func GetUserIDFromContext(ctx context.Context) (int, bool) {
-	userID, ok := ctx.Value(userKey).(int)
+func GetUserIDFromContext(ctx context.Context) (uuid.UUID, bool) {
+	userID, ok := ctx.Value(userKey).(uuid.UUID)
 	return userID, ok
 }

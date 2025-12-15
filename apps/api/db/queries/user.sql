@@ -1,7 +1,11 @@
 -- name: CreateUser :one
 INSERT INTO users (name, email, password_hash)
-VALUES ($1, $2, $3)
-RETURNING *;
+VALUES (
+  sqlc.arg(name),
+  LOWER(sqlc.arg(email)),
+  sqlc.arg(password_hash)
+)
+RETURNING id, name, email, password_hash, created_at;
 
 -- name: GetUser :one
 SELECT * FROM users
@@ -19,7 +23,7 @@ OFFSET $2;
 
 -- name: UpdateUser :one
 UPDATE users
-SET name = $2, email = $3
+SET name = $2, email = LOWER($3)
 WHERE id = $1
 RETURNING *;
 

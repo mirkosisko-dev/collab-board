@@ -2,11 +2,10 @@ package middleware
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
-	"unicode/utf8"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	"github.com/mirkosisko-dev/api/config"
 	"github.com/mirkosisko-dev/api/internal/api/service/auth"
 )
@@ -38,20 +37,18 @@ func AuthenticationMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// Extract "sub" (user id)
-		sub, ok := claims["sub"]
-		if !ok {
+		sub, ok := claims["sub"].(string)
+		if !ok || sub == "" {
 			auth.PermissionDenied(w)
 			return
 		}
 
-		userID, ok := parseSubToInt(sub)
-		if !ok {
+		userID, err := uuid.Parse(sub)
+		if err != nil {
 			auth.PermissionDenied(w)
 			return
 		}
 
-		// Put user id into context
 		ctx := auth.WithUserID(r.Context(), userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
@@ -66,25 +63,5 @@ func extractToken(r *http.Request) string {
 	splitToken := strings.Split(reqToken, "Bearer ")
 	reqToken = splitToken[1]
 
-	// Last char is " for some reason
-	for len(reqToken) > 0 {
-		_, size := utf8.DecodeLastRuneInString(reqToken)
-		return reqToken[:len(reqToken)-size]
-	}
-
 	return reqToken
-}
-
-func parseSubToInt(v any) (int, bool) {
-	switch t := v.(type) {
-	case float64:
-		return int(t), true
-	case int:
-		return t, true
-	case string:
-		n, err := strconv.Atoi(t)
-		return n, err == nil
-	default:
-		return 0, false
-	}
 }

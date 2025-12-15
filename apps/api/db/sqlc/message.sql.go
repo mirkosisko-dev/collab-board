@@ -18,11 +18,11 @@ RETURNING id, board_id, organization_id, user_id, document_id, content, created_
 `
 
 type CreateMessageParams struct {
-	BoardID        pgtype.Int4
-	OrganizationID pgtype.Int4
-	UserID         pgtype.Int4
-	DocumentID     pgtype.Int4
-	Content        pgtype.Text
+	BoardID        pgtype.UUID
+	OrganizationID pgtype.UUID
+	UserID         pgtype.UUID
+	DocumentID     pgtype.UUID
+	Content        string
 }
 
 func (q *Queries) CreateMessage(ctx context.Context, arg CreateMessageParams) (Message, error) {
@@ -51,7 +51,7 @@ DELETE FROM messages
 WHERE id = $1
 `
 
-func (q *Queries) DeleteMessage(ctx context.Context, id int32) error {
+func (q *Queries) DeleteMessage(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteMessage, id)
 	return err
 }
@@ -61,7 +61,7 @@ SELECT id, board_id, organization_id, user_id, document_id, content, created_at 
 WHERE id = $1
 `
 
-func (q *Queries) GetMessage(ctx context.Context, id int32) (Message, error) {
+func (q *Queries) GetMessage(ctx context.Context, id pgtype.UUID) (Message, error) {
 	row := q.db.QueryRow(ctx, getMessage, id)
 	var i Message
 	err := row.Scan(
@@ -85,7 +85,7 @@ OFFSET $3
 `
 
 type ListMessagesParams struct {
-	BoardID pgtype.Int4
+	BoardID pgtype.UUID
 	Limit   int32
 	Offset  int32
 }
@@ -127,7 +127,7 @@ OFFSET $3
 `
 
 type ListMessagesByOrganizationParams struct {
-	OrganizationID pgtype.Int4
+	OrganizationID pgtype.UUID
 	Limit          int32
 	Offset         int32
 }
@@ -168,8 +168,8 @@ RETURNING id, board_id, organization_id, user_id, document_id, content, created_
 `
 
 type UpdateMessageParams struct {
-	ID      int32
-	Content pgtype.Text
+	ID      pgtype.UUID
+	Content string
 }
 
 func (q *Queries) UpdateMessage(ctx context.Context, arg UpdateMessageParams) (Message, error) {

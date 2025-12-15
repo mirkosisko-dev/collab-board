@@ -7,11 +7,17 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (name, email, password_hash)
-VALUES ($1, $2, $3)
+VALUES (
+  $1,
+  LOWER($2),
+  $3
+)
 RETURNING id, name, email, password_hash, created_at
 `
 
@@ -39,7 +45,7 @@ DELETE FROM users
 WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
+func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUser, id)
 	return err
 }
@@ -49,7 +55,7 @@ SELECT id, name, email, password_hash, created_at FROM users
 WHERE id = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
+func (q *Queries) GetUser(ctx context.Context, id pgtype.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, getUser, id)
 	var i User
 	err := row.Scan(
@@ -120,19 +126,19 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 
 const updateUser = `-- name: UpdateUser :one
 UPDATE users
-SET name = $2, email = $3
+SET name = $2, email = LOWER($3)
 WHERE id = $1
 RETURNING id, name, email, password_hash, created_at
 `
 
 type UpdateUserParams struct {
-	ID    int32
+	ID    pgtype.UUID
 	Name  string
-	Email string
+	Lower string
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, updateUser, arg.ID, arg.Name, arg.Email)
+	row := q.db.QueryRow(ctx, updateUser, arg.ID, arg.Name, arg.Lower)
 	var i User
 	err := row.Scan(
 		&i.ID,

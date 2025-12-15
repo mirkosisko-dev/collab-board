@@ -18,9 +18,9 @@ RETURNING id, organization_id, invited_by_user_id, invited_user_id, role, status
 `
 
 type CreateOrganizationInviteParams struct {
-	OrganizationID  pgtype.Int4
-	InvitedByUserID pgtype.Int4
-	InvitedUserID   pgtype.Int4
+	OrganizationID  pgtype.UUID
+	InvitedByUserID pgtype.UUID
+	InvitedUserID   pgtype.UUID
 	Role            OrganizationRole
 	Status          OrganizationInviteStatus
 	ExpiresAt       pgtype.Timestamp
@@ -57,7 +57,7 @@ DELETE FROM organization_invite
 WHERE id = $1
 `
 
-func (q *Queries) DeleteOrganizationInvite(ctx context.Context, id int32) error {
+func (q *Queries) DeleteOrganizationInvite(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteOrganizationInvite, id)
 	return err
 }
@@ -67,7 +67,7 @@ SELECT id, organization_id, invited_by_user_id, invited_user_id, role, status, e
 WHERE id = $1
 `
 
-func (q *Queries) GetOrganizationInvite(ctx context.Context, id int32) (OrganizationInvite, error) {
+func (q *Queries) GetOrganizationInvite(ctx context.Context, id pgtype.UUID) (OrganizationInvite, error) {
 	row := q.db.QueryRow(ctx, getOrganizationInvite, id)
 	var i OrganizationInvite
 	err := row.Scan(
@@ -87,19 +87,10 @@ func (q *Queries) GetOrganizationInvite(ctx context.Context, id int32) (Organiza
 const listOrganizationInvites = `-- name: ListOrganizationInvites :many
 SELECT id, organization_id, invited_by_user_id, invited_user_id, role, status, expires_at, created_at, responded_at FROM organization_invite 
 WHERE invited_user_id = $1
-ORDER BY id
-LIMIT $2
-OFFSET $3
 `
 
-type ListOrganizationInvitesParams struct {
-	InvitedUserID pgtype.Int4
-	Limit         int32
-	Offset        int32
-}
-
-func (q *Queries) ListOrganizationInvites(ctx context.Context, arg ListOrganizationInvitesParams) ([]OrganizationInvite, error) {
-	rows, err := q.db.Query(ctx, listOrganizationInvites, arg.InvitedUserID, arg.Limit, arg.Offset)
+func (q *Queries) ListOrganizationInvites(ctx context.Context, invitedUserID pgtype.UUID) ([]OrganizationInvite, error) {
+	rows, err := q.db.Query(ctx, listOrganizationInvites, invitedUserID)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +127,7 @@ RETURNING id, organization_id, invited_by_user_id, invited_user_id, role, status
 `
 
 type UpdateOrganizationInviteParams struct {
-	ID        int32
+	ID        pgtype.UUID
 	ExpiresAt pgtype.Timestamp
 }
 

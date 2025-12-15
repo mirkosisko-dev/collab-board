@@ -18,9 +18,9 @@ RETURNING id, organization_id, name, created_by
 `
 
 type CreateBoardParams struct {
-	OrganizationID pgtype.Int4
-	Name           pgtype.Text
-	CreatedBy      pgtype.Int4
+	OrganizationID pgtype.UUID
+	Name           string
+	CreatedBy      pgtype.UUID
 }
 
 func (q *Queries) CreateBoard(ctx context.Context, arg CreateBoardParams) (Board, error) {
@@ -40,7 +40,7 @@ DELETE FROM boards
 WHERE id = $1
 `
 
-func (q *Queries) DeleteBoard(ctx context.Context, id int32) error {
+func (q *Queries) DeleteBoard(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteBoard, id)
 	return err
 }
@@ -50,7 +50,7 @@ SELECT id, organization_id, name, created_by FROM boards
 WHERE id = $1
 `
 
-func (q *Queries) GetBoard(ctx context.Context, id int32) (Board, error) {
+func (q *Queries) GetBoard(ctx context.Context, id pgtype.UUID) (Board, error) {
 	row := q.db.QueryRow(ctx, getBoard, id)
 	var i Board
 	err := row.Scan(
@@ -71,7 +71,7 @@ OFFSET $3
 `
 
 type ListBoardsParams struct {
-	OrganizationID pgtype.Int4
+	OrganizationID pgtype.UUID
 	Limit          int32
 	Offset         int32
 }
@@ -109,8 +109,8 @@ RETURNING id, organization_id, name, created_by
 `
 
 type UpdateBoardParams struct {
-	ID   int32
-	Name pgtype.Text
+	ID   pgtype.UUID
+	Name string
 }
 
 func (q *Queries) UpdateBoard(ctx context.Context, arg UpdateBoardParams) (Board, error) {

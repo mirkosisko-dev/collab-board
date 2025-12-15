@@ -18,9 +18,9 @@ RETURNING id, organization_id, title, created_by, created_at, updated_at
 `
 
 type CreateDocumentParams struct {
-	OrganizationID pgtype.Int4
-	Title          pgtype.Text
-	CreatedBy      pgtype.Int4
+	OrganizationID pgtype.UUID
+	Title          string
+	CreatedBy      pgtype.UUID
 }
 
 func (q *Queries) CreateDocument(ctx context.Context, arg CreateDocumentParams) (Document, error) {
@@ -42,7 +42,7 @@ DELETE FROM documents
 WHERE id = $1
 `
 
-func (q *Queries) DeleteDocument(ctx context.Context, id int32) error {
+func (q *Queries) DeleteDocument(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteDocument, id)
 	return err
 }
@@ -52,7 +52,7 @@ SELECT id, organization_id, title, created_by, created_at, updated_at FROM docum
 WHERE id = $1
 `
 
-func (q *Queries) GetDocument(ctx context.Context, id int32) (Document, error) {
+func (q *Queries) GetDocument(ctx context.Context, id pgtype.UUID) (Document, error) {
 	row := q.db.QueryRow(ctx, getDocument, id)
 	var i Document
 	err := row.Scan(
@@ -75,7 +75,7 @@ OFFSET $3
 `
 
 type ListDocumentsParams struct {
-	OrganizationID pgtype.Int4
+	OrganizationID pgtype.UUID
 	Limit          int32
 	Offset         int32
 }
@@ -115,8 +115,8 @@ RETURNING id, organization_id, title, created_by, created_at, updated_at
 `
 
 type UpdateDocumentParams struct {
-	ID    int32
-	Title pgtype.Text
+	ID    pgtype.UUID
+	Title string
 }
 
 func (q *Queries) UpdateDocument(ctx context.Context, arg UpdateDocumentParams) (Document, error) {

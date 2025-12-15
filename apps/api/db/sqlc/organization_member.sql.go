@@ -18,8 +18,8 @@ RETURNING id, organization_id, user_id, role, created_at
 `
 
 type CreateOrganizationMemberParams struct {
-	OrganizationID pgtype.Int4
-	UserID         pgtype.Int4
+	OrganizationID pgtype.UUID
+	UserID         pgtype.UUID
 	Role           OrganizationRole
 }
 
@@ -41,7 +41,7 @@ DELETE FROM organization_members
 WHERE id = $1
 `
 
-func (q *Queries) DeleteOrganizationMember(ctx context.Context, id int32) error {
+func (q *Queries) DeleteOrganizationMember(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteOrganizationMember, id)
 	return err
 }
@@ -51,7 +51,7 @@ SELECT id, organization_id, user_id, role, created_at FROM organization_members
 WHERE id = $1
 `
 
-func (q *Queries) GetOrganizationMember(ctx context.Context, id int32) (OrganizationMember, error) {
+func (q *Queries) GetOrganizationMember(ctx context.Context, id pgtype.UUID) (OrganizationMember, error) {
 	row := q.db.QueryRow(ctx, getOrganizationMember, id)
 	var i OrganizationMember
 	err := row.Scan(
@@ -70,8 +70,8 @@ WHERE organization_id = $1 AND user_id = $2
 `
 
 type GetOrganizationMemberByOrgAndUserParams struct {
-	OrganizationID pgtype.Int4
-	UserID         pgtype.Int4
+	OrganizationID pgtype.UUID
+	UserID         pgtype.UUID
 }
 
 func (q *Queries) GetOrganizationMemberByOrgAndUser(ctx context.Context, arg GetOrganizationMemberByOrgAndUserParams) (OrganizationMember, error) {
@@ -96,7 +96,7 @@ OFFSET $3
 `
 
 type ListOrganizationMembersParams struct {
-	OrganizationID pgtype.Int4
+	OrganizationID pgtype.UUID
 	Limit          int32
 	Offset         int32
 }
@@ -135,7 +135,7 @@ RETURNING id, organization_id, user_id, role, created_at
 `
 
 type UpdateOrganizationMemberParams struct {
-	ID   int32
+	ID   pgtype.UUID
 	Role OrganizationRole
 }
 

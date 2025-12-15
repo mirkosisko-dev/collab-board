@@ -1,8 +1,8 @@
 CREATE TABLE documents (
-  id SERIAL PRIMARY KEY,
-  organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
-  title VARCHAR(255),
-  created_by INT REFERENCES users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  title VARCHAR(255) NOT NULL,
+  created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );

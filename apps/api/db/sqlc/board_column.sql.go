@@ -18,9 +18,9 @@ RETURNING id, board_id, name, position
 `
 
 type CreateBoardColumnParams struct {
-	BoardID  pgtype.Int4
-	Name     pgtype.Text
-	Position pgtype.Int4
+	BoardID  pgtype.UUID
+	Name     string
+	Position int32
 }
 
 func (q *Queries) CreateBoardColumn(ctx context.Context, arg CreateBoardColumnParams) (BoardColumn, error) {
@@ -40,7 +40,7 @@ DELETE FROM board_column
 WHERE id = $1
 `
 
-func (q *Queries) DeleteBoardColumn(ctx context.Context, id int32) error {
+func (q *Queries) DeleteBoardColumn(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleteBoardColumn, id)
 	return err
 }
@@ -50,7 +50,7 @@ SELECT id, board_id, name, position FROM board_column
 WHERE id = $1
 `
 
-func (q *Queries) GetBoardColumn(ctx context.Context, id int32) (BoardColumn, error) {
+func (q *Queries) GetBoardColumn(ctx context.Context, id pgtype.UUID) (BoardColumn, error) {
 	row := q.db.QueryRow(ctx, getBoardColumn, id)
 	var i BoardColumn
 	err := row.Scan(
@@ -71,7 +71,7 @@ OFFSET $3
 `
 
 type ListBoardColumnsParams struct {
-	BoardID pgtype.Int4
+	BoardID pgtype.UUID
 	Limit   int32
 	Offset  int32
 }
@@ -109,9 +109,9 @@ RETURNING id, board_id, name, position
 `
 
 type UpdateBoardColumnParams struct {
-	ID       int32
-	Name     pgtype.Text
-	Position pgtype.Int4
+	ID       pgtype.UUID
+	Name     string
+	Position int32
 }
 
 func (q *Queries) UpdateBoardColumn(ctx context.Context, arg UpdateBoardColumnParams) (BoardColumn, error) {

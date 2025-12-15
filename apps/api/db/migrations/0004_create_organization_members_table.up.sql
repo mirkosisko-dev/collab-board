@@ -1,7 +1,7 @@
 CREATE TABLE organization_members (
-  id SERIAL PRIMARY KEY,
-  organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
-  user_id INT REFERENCES users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   role organization_role NOT NULL DEFAULT 'owner',
   created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
 );

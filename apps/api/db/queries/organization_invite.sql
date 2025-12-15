@@ -9,10 +9,7 @@ WHERE id = $1;
 
 -- name: ListOrganizationInvites :many
 SELECT * FROM organization_invite 
-WHERE invited_user_id = $1
-ORDER BY id
-LIMIT $2
-OFFSET $3;
+WHERE invited_user_id = $1;
 
 -- name: UpdateOrganizationInvite :one
 UPDATE organization_invite

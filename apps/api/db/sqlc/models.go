@@ -100,55 +100,55 @@ func (ns NullOrganizationRole) Value() (driver.Value, error) {
 }
 
 type Board struct {
-	ID             int32
-	OrganizationID pgtype.Int4
-	Name           pgtype.Text
-	CreatedBy      pgtype.Int4
+	ID             pgtype.UUID
+	OrganizationID pgtype.UUID
+	Name           string
+	CreatedBy      pgtype.UUID
 }
 
 type BoardColumn struct {
-	ID       int32
-	BoardID  pgtype.Int4
-	Name     pgtype.Text
-	Position pgtype.Int4
+	ID       pgtype.UUID
+	BoardID  pgtype.UUID
+	Name     string
+	Position int32
 }
 
 type Document struct {
-	ID             int32
-	OrganizationID pgtype.Int4
-	Title          pgtype.Text
-	CreatedBy      pgtype.Int4
+	ID             pgtype.UUID
+	OrganizationID pgtype.UUID
+	Title          string
+	CreatedBy      pgtype.UUID
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
 }
 
 type DocumentContent struct {
-	DocumentID pgtype.Int4
+	DocumentID pgtype.UUID
 	YdocState  []byte
 	UpdatedAt  pgtype.Timestamp
 }
 
 type Message struct {
-	ID             int32
-	BoardID        pgtype.Int4
-	OrganizationID pgtype.Int4
-	UserID         pgtype.Int4
-	DocumentID     pgtype.Int4
-	Content        pgtype.Text
+	ID             pgtype.UUID
+	BoardID        pgtype.UUID
+	OrganizationID pgtype.UUID
+	UserID         pgtype.UUID
+	DocumentID     pgtype.UUID
+	Content        string
 	CreatedAt      pgtype.Timestamp
 }
 
 type Organization struct {
-	ID        int32
+	ID        pgtype.UUID
 	Name      string
 	CreatedAt pgtype.Timestamp
 }
 
 type OrganizationInvite struct {
-	ID              int32
-	OrganizationID  pgtype.Int4
-	InvitedByUserID pgtype.Int4
-	InvitedUserID   pgtype.Int4
+	ID              pgtype.UUID
+	OrganizationID  pgtype.UUID
+	InvitedByUserID pgtype.UUID
+	InvitedUserID   pgtype.UUID
 	Role            OrganizationRole
 	Status          OrganizationInviteStatus
 	ExpiresAt       pgtype.Timestamp
@@ -157,27 +157,27 @@ type OrganizationInvite struct {
 }
 
 type OrganizationMember struct {
-	ID             int32
-	OrganizationID pgtype.Int4
-	UserID         pgtype.Int4
+	ID             pgtype.UUID
+	OrganizationID pgtype.UUID
+	UserID         pgtype.UUID
 	Role           OrganizationRole
 	CreatedAt      pgtype.Timestamp
 }
 
 type Task struct {
-	ID          int32
-	BoardID     pgtype.Int4
-	ColumnID    pgtype.Int4
-	AssigneeID  pgtype.Int4
-	Title       pgtype.Text
+	ID          pgtype.UUID
+	BoardID     pgtype.UUID
+	ColumnID    pgtype.UUID
+	AssigneeID  pgtype.UUID
+	Title       string
 	Description pgtype.Text
-	Position    pgtype.Int4
-	CreatedBy   pgtype.Int4
+	Position    int32
+	CreatedBy   pgtype.UUID
 	CreatedAt   pgtype.Timestamp
 }
 
 type User struct {
-	ID           int32
+	ID           pgtype.UUID
 	Name         string
 	Email        string
 	PasswordHash string

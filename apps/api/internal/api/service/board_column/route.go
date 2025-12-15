@@ -22,8 +22,8 @@ func (h *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (h *Handler) handleCreateBoardColumn(w http.ResponseWriter, r *http.Request) {
-
 	var payload sqlc.CreateBoardColumnParams
+
 	if err := utils.ParseJSON(r, &payload); err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return

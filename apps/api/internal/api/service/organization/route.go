@@ -3,8 +3,8 @@ package organization
 import (
 	"errors"
 	"net/http"
-	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/mirkosisko-dev/api/db"
@@ -24,7 +24,7 @@ func NewHandler(storage *pool.Database) *Handler {
 
 func (h *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/organization", h.handleCreateOrganization).Methods(http.MethodPost)
-	router.HandleFunc("/organization/{orgId}/invites", h.handleCreateInvite).Methods(http.MethodPost)
+	router.HandleFunc("/organization/{orgUID}/invite", h.handleCreateInvite).Methods(http.MethodPost)
 }
 
 func (h *Handler) handleCreateOrganization(w http.ResponseWriter, r *http.Request) {
@@ -49,14 +49,14 @@ func (h *Handler) handleCreateOrganization(w http.ResponseWriter, r *http.Reques
 
 func (h *Handler) handleCreateInvite(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	orgID := vars["orgId"]
+	orgUIDStr := vars["orgUID"]
 
-	if orgID == "" {
+	if orgUIDStr == "" {
 		utils.WriteError(w, http.StatusBadRequest, errors.New("organization id is required"))
 		return
 	}
 
-	orgIdInt, err := strconv.ParseInt(orgID, 10, 32)
+	orgUID, err := uuid.Parse(orgUIDStr)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, errors.New("invalid organization id"))
 		return
@@ -76,9 +76,9 @@ func (h *Handler) handleCreateInvite(w http.ResponseWriter, r *http.Request) {
 	}
 
 	invite, err := h.storage.Query.CreateOrganizationInvite(r.Context(), sqlc.CreateOrganizationInviteParams{
-		OrganizationID:  pgtype.Int4{Int32: int32(orgIdInt), Valid: true},
-		InvitedUserID:   pgtype.Int4{Int32: payload.InvitedUserID, Valid: true},
-		InvitedByUserID: pgtype.Int4{Int32: int32(userID), Valid: true},
+		OrganizationID:  pgtype.UUID{Bytes: orgUID, Valid: true},
+		InvitedUserID:   pgtype.UUID{Bytes: payload.InvitedUserID, Valid: true},
+		InvitedByUserID: pgtype.UUID{Bytes: userID, Valid: true},
 		ExpiresAt:       pgtype.Timestamp{Time: payload.ExpiresAt, Valid: true},
 		Role:            sqlc.OrganizationRoleOwner,
 		Status:          sqlc.OrganizationInviteStatusPending,

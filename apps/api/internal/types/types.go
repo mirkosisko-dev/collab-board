@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mirkosisko-dev/api/db/sqlc"
 )
 
@@ -18,7 +19,7 @@ type LoginUserPayload struct {
 }
 
 type CreateInvitePayload struct {
-	InvitedUserID int32                         `json:"invitedUserId"`
+	InvitedUserID uuid.UUID                     `json:"invitedUserId"`
 	Role          sqlc.OrganizationRole         `json:"role"`
 	Status        sqlc.OrganizationInviteStatus `json:"status"`
 	ExpiresAt     time.Time                     `json:"expiresAt,omitempty"`
