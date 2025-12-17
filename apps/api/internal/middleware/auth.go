@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/mirkosisko-dev/api/internal/handlers/auth"
 )
@@ -18,25 +17,13 @@ func AuthenticationMiddleware(jwtSecret string) func(next http.Handler) http.Han
 				return
 			}
 
-			token, err := auth.ValidateToken(tokenString, jwtSecret)
-			if err != nil || token == nil || !token.Valid {
+			claims, err := auth.ValidateToken(tokenString, jwtSecret)
+			if err != nil {
 				auth.PermissionDenied(w)
 				return
 			}
 
-			claims, ok := token.Claims.(jwt.MapClaims)
-			if !ok {
-				auth.PermissionDenied(w)
-				return
-			}
-
-			sub, ok := claims[string(auth.UserKey)].(string)
-			if !ok || sub == "" {
-				auth.PermissionDenied(w)
-				return
-			}
-
-			userID, err := uuid.Parse(sub)
+			userID, err := uuid.Parse(claims.UserID.String())
 			if err != nil {
 				auth.PermissionDenied(w)
 				return

@@ -12,15 +12,15 @@ import (
 )
 
 const createSesion = `-- name: CreateSesion :one
-INSERT INTO sessions (user_id, refresh_token, is_revoked, expires_at)
+INSERT INTO sessions (id, refresh_token, is_revoked, expires_at)
 VALUES (
   $1, $2, $3, $4
 )
-RETURNING id, user_id, refresh_token, is_revoked, created_at, expires_at
+RETURNING id, refresh_token, is_revoked, created_at, expires_at
 `
 
 type CreateSesionParams struct {
-	UserID       pgtype.UUID
+	ID           pgtype.UUID
 	RefreshToken string
 	IsRevoked    bool
 	ExpiresAt    pgtype.Timestamp
@@ -28,7 +28,7 @@ type CreateSesionParams struct {
 
 func (q *Queries) CreateSesion(ctx context.Context, arg CreateSesionParams) (Session, error) {
 	row := q.db.QueryRow(ctx, createSesion,
-		arg.UserID,
+		arg.ID,
 		arg.RefreshToken,
 		arg.IsRevoked,
 		arg.ExpiresAt,
@@ -36,7 +36,6 @@ func (q *Queries) CreateSesion(ctx context.Context, arg CreateSesionParams) (Ses
 	var i Session
 	err := row.Scan(
 		&i.ID,
-		&i.UserID,
 		&i.RefreshToken,
 		&i.IsRevoked,
 		&i.CreatedAt,
@@ -56,7 +55,7 @@ func (q *Queries) DeleteSession(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getSession = `-- name: GetSession :one
-SELECT id, user_id, refresh_token, is_revoked, created_at, expires_at FROM sessions
+SELECT id, refresh_token, is_revoked, created_at, expires_at FROM sessions
 WHERE id = $1
 `
 
@@ -65,7 +64,6 @@ func (q *Queries) GetSession(ctx context.Context, id pgtype.UUID) (Session, erro
 	var i Session
 	err := row.Scan(
 		&i.ID,
-		&i.UserID,
 		&i.RefreshToken,
 		&i.IsRevoked,
 		&i.CreatedAt,
@@ -75,7 +73,7 @@ func (q *Queries) GetSession(ctx context.Context, id pgtype.UUID) (Session, erro
 }
 
 const listSessions = `-- name: ListSessions :many
-SELECT id, user_id, refresh_token, is_revoked, created_at, expires_at FROM sessions
+SELECT id, refresh_token, is_revoked, created_at, expires_at FROM sessions
 ORDER BY id
 LIMIT $1
 OFFSET $2
@@ -97,7 +95,6 @@ func (q *Queries) ListSessions(ctx context.Context, arg ListSessionsParams) ([]S
 		var i Session
 		if err := rows.Scan(
 			&i.ID,
-			&i.UserID,
 			&i.RefreshToken,
 			&i.IsRevoked,
 			&i.CreatedAt,
@@ -128,7 +125,7 @@ const updateSession = `-- name: UpdateSession :one
 UPDATE sessions
 SET is_revoked = $2, expires_at = $3
 WHERE id = $1
-RETURNING id, user_id, refresh_token, is_revoked, created_at, expires_at
+RETURNING id, refresh_token, is_revoked, created_at, expires_at
 `
 
 type UpdateSessionParams struct {
@@ -142,7 +139,6 @@ func (q *Queries) UpdateSession(ctx context.Context, arg UpdateSessionParams) (S
 	var i Session
 	err := row.Scan(
 		&i.ID,
-		&i.UserID,
 		&i.RefreshToken,
 		&i.IsRevoked,
 		&i.CreatedAt,

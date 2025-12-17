@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/mirkosisko-dev/api/config"
 	pool "github.com/mirkosisko-dev/api/db"
 	"github.com/mirkosisko-dev/api/db/sqlc"
 	"github.com/mirkosisko-dev/api/internal/handlers/auth"
@@ -18,12 +19,14 @@ import (
 
 type Handler struct {
 	storage        *pool.Database
+	config         *config.Config
 	sessionService *session.Service
 }
 
-func NewHandler(storage *pool.Database, sessionService *session.Service) *Handler {
+func NewHandler(storage *pool.Database, config *config.Config, sessionService *session.Service) *Handler {
 	return &Handler{
 		storage:        storage,
+		config:         config,
 		sessionService: sessionService,
 	}
 }
@@ -32,12 +35,14 @@ func (h *Handler) RegisterPublicRoutes(r *mux.Router) {
 	r.HandleFunc("/auth/register", h.handleRegister).Methods(http.MethodPost)
 	r.HandleFunc("/auth/login", h.handleLogin).Methods(http.MethodPost)
 	r.HandleFunc("/auth/logout", h.handleLogout).Methods(http.MethodPost)
+	r.HandleFunc("/auth/refresh", h.renewAccessToken).Methods(http.MethodPost)
 }
 
 func (h *Handler) RegisterProtectedRoutes(r *mux.Router) {
 	r.HandleFunc("/me", h.handleGetMe).Methods(http.MethodGet)
 	// r.HandleFunc("/users/me/password", h.handleUpdatePassword).Methods(http.MethodPatch)
 	r.HandleFunc("/invites", h.handleGetInvites).Methods(http.MethodGet)
+	r.HandleFunc("/auth/revoke", h.renewAccessToken).Methods(http.MethodPost)
 }
 
 func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -63,9 +68,10 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 		utils.WriteError(w, http.StatusInternalServerError, errors.New("user id invalid"))
 		return
 	}
+
 	userUUID := uuid.UUID(user.ID.Bytes)
 
-	session, accessToken, refreshToken, atExp, rtExp, err := h.sessionService.CreateSession(r.Context(), userUUID)
+	session, accessToken, refreshToken, atExp, rtExp, err := h.sessionService.CreateSession(r.Context(), userUUID, user.Email)
 	if err != nil {
 		utils.WriteError(w, http.StatusInternalServerError, err)
 		return
@@ -85,13 +91,15 @@ func (h *Handler) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
-	userID, ok := auth.GetUserIDFromContext(r.Context())
-	if !ok {
-		utils.WriteError(w, http.StatusUnauthorized, errors.New("unauthorized"))
+	claims := r.Context().Value(auth.AuthKey{}).(*auth.TokenClaims)
+
+	sessionUUID, err := uuid.Parse(claims.RegisteredClaims.ID)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
 		return
 	}
 
-	err := h.storage.Query.DeleteSession(r.Context(), pgtype.UUID{Bytes: userID, Valid: true})
+	err = h.sessionService.DeleteSession(r.Context(), sessionUUID)
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -171,4 +179,24 @@ func (h *Handler) handleGetMe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.WriteJSON(w, http.StatusOK, resp)
+}
+
+func (h *Handler) renewAccessToken(w http.ResponseWriter, r *http.Request) {
+	var payload types.RenewAccessTokenPayload
+
+	if err := utils.ParseJSON(r, &payload); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, err)
+		return
+	}
+
+	accessToken, atExp, err := h.sessionService.RenewAccessToken(r.Context(), payload.RefreshToken)
+	if err != nil {
+		utils.WriteError(w, http.StatusUnauthorized, err)
+		return
+	}
+
+	utils.WriteJSON(w, http.StatusOK, types.RenewAccessTokenRes{
+		AccessToken:          accessToken,
+		AccessTokenExpiresAt: atExp.String(),
+	})
 }

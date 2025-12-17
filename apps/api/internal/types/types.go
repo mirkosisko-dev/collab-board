@@ -39,6 +39,10 @@ type CreateInvitePayload struct {
 	ExpiresAt     time.Time                     `json:"expiresAt,omitempty"`
 }
 
+type RenewAccessTokenPayload struct {
+	RefreshToken string `json:"refreshToken"`
+}
+
 type RenewAccessTokenRes struct {
 	AccessToken          string `json:"access_token"`
 	AccessTokenExpiresAt string `json:"access_token_expires_at"`

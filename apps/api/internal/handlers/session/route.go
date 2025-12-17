@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	pool "github.com/mirkosisko-dev/api/db"
 	"github.com/mirkosisko-dev/api/db/sqlc"
+	"github.com/mirkosisko-dev/api/internal/handlers/auth"
 	"github.com/mirkosisko-dev/api/utils"
 )
 
@@ -68,17 +69,14 @@ func (h *Handler) handleGetSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) handleRevokeSession(w http.ResponseWriter, r *http.Request) {
-	type revokeSessionPayload struct {
-		SessionID uuid.UUID `json:"session_id"`
-	}
+	claims := r.Context().Value(auth.AuthKey{}).(*auth.TokenClaims)
 
-	var payload revokeSessionPayload
-	if err := utils.ParseJSON(r, &payload); err != nil {
+	sessionUUID, err := uuid.Parse(claims.RegisteredClaims.ID)
+	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
-		return
 	}
 
-	err := h.storage.Query.RevokeSession(r.Context(), pgtype.UUID{Bytes: payload.SessionID, Valid: true})
+	err = h.storage.Query.RevokeSession(r.Context(), pgtype.UUID{Bytes: sessionUUID, Valid: true})
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, err)
 		return
@@ -91,13 +89,13 @@ func (h *Handler) handleDeleteSession(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sessionIDStr := vars["sessionID"]
 	if sessionIDStr == "" {
-		utils.WriteError(w, http.StatusBadRequest, errors.New("organization id is required"))
+		utils.WriteError(w, http.StatusBadRequest, errors.New("session id is required"))
 		return
 	}
 
 	sessionID, err := uuid.Parse(sessionIDStr)
 	if err != nil {
-		utils.WriteError(w, http.StatusBadRequest, errors.New("invalid organization id"))
+		utils.WriteError(w, http.StatusBadRequest, errors.New("invalid session id"))
 		return
 	}
 

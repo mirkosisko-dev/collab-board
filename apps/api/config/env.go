@@ -10,8 +10,8 @@ import (
 
 type Config struct {
 	DatabaseUrl                     string
-	JWTExpirationInSeconds          int64
-	JWTSecret                       string
+	AccessTokenExpirationInSeconds  int64
+	AccessTokenSecret               string
 	RefreshTokenExpirationInSeconds int64
 	RefreshTokenSecret              string
 }
@@ -23,9 +23,9 @@ func Load() Config {
 
 	return Config{
 		DatabaseUrl:                     getEnv("DATABASE_URL", "postgres://admin:admin@localhost:5432/collab_board?sslmode=disable"),
-		JWTExpirationInSeconds:          getEnvAsInt("JWT_EXP", 3600*24*7),
-		JWTSecret:                       getEnv("JWT_SECRET", "not-a-secret-any-more"),
-		RefreshTokenExpirationInSeconds: getEnvAsInt("RT_EXP", 3600*24*100),
+		AccessTokenExpirationInSeconds:  getEnvAsInt("AT_EXP", 3600*24*7),
+		AccessTokenSecret:               getEnv("AT_SECRET", "not-a-secret-any-more"),
+		RefreshTokenExpirationInSeconds: getEnvAsInt("RT_EXP", 3600*24*14),
 		RefreshTokenSecret:              getEnv("RT_SECRET", "not-a-secret-any-more-2"),
 	}
 }

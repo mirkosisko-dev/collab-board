@@ -1,5 +1,5 @@
 -- name: CreateSesion :one
-INSERT INTO sessions (user_id, refresh_token, is_revoked, expires_at)
+INSERT INTO sessions (id, refresh_token, is_revoked, expires_at)
 VALUES (
   $1, $2, $3, $4
 )

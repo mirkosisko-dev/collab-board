@@ -49,7 +49,7 @@ func (s *APIServer) Run() error {
 	public := subrouter.NewRoute().Subrouter()
 	protected := subrouter.NewRoute().Subrouter()
 
-	protected.Use(middleware.AuthenticationMiddleware(s.config.JWTSecret))
+	protected.Use(middleware.AuthenticationMiddleware(s.config.AccessTokenSecret))
 
 	boardhandlers := board.NewHandler(s.db)
 	boardhandlers.RegisterRoutes(protected)
@@ -77,7 +77,7 @@ func (s *APIServer) Run() error {
 
 	sessionService := sessionservice.NewService(s.db, s.config)
 
-	userHandler := user.NewHandler(s.db, sessionService)
+	userHandler := user.NewHandler(s.db, s.config, sessionService)
 	userHandler.RegisterPublicRoutes(public)
 	userHandler.RegisterProtectedRoutes(protected)
 

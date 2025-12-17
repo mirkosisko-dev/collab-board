@@ -166,7 +166,6 @@ type OrganizationMember struct {
 
 type Session struct {
 	ID           pgtype.UUID
-	UserID       pgtype.UUID
 	RefreshToken string
 	IsRevoked    bool
 	CreatedAt    pgtype.Timestamp
