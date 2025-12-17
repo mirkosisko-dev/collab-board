@@ -164,6 +164,15 @@ type OrganizationMember struct {
 	CreatedAt      pgtype.Timestamp
 }
 
+type Session struct {
+	ID           pgtype.UUID
+	UserID       pgtype.UUID
+	RefreshToken string
+	IsRevoked    bool
+	CreatedAt    pgtype.Timestamp
+	ExpiresAt    pgtype.Timestamp
+}
+
 type Task struct {
 	ID          pgtype.UUID
 	BoardID     pgtype.UUID

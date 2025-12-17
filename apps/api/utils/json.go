@@ -21,10 +21,23 @@ func WriteJSON(w http.ResponseWriter, status int, v any) error {
 	return json.NewEncoder(w).Encode(v)
 }
 
-type errorResponse struct {
-	Error string `json:"error"`
+type APIError struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+func (e APIError) Error() string {
+	return e.Message
 }
 
 func WriteError(w http.ResponseWriter, status int, err error) {
-	_ = WriteJSON(w, status, errorResponse{Error: err.Error()})
+	code := http.StatusText(status)
+	if apiErr, ok := err.(APIError); ok {
+		code = apiErr.Code
+	}
+
+	_ = WriteJSON(w, status, APIError{
+		Code:    code,
+		Message: err.Error(),
+	})
 }

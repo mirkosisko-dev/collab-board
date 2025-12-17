@@ -9,16 +9,15 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/mirkosisko-dev/api/config"
 	"github.com/mirkosisko-dev/api/utils"
 )
 
 type contextKey string
 
-const userKey contextKey = "sub"
+const UserKey contextKey = "sub"
 
-func CreateJWT(userID uuid.UUID) (string, error) {
-	exp := time.Now().Add(time.Second * time.Duration(config.Envs.JWTExpirationInSeconds)).Unix()
+func CreateJWT(userID uuid.UUID, secret string, durationSeconds int64) (string, error) {
+	exp := time.Now().Add(time.Second * time.Duration(durationSeconds)).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
@@ -28,7 +27,7 @@ func CreateJWT(userID uuid.UUID) (string, error) {
 			"iat": time.Now().Unix(),
 		})
 
-	jwt, err := token.SignedString([]byte(config.Envs.JWTSecret))
+	jwt, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err
 	}
@@ -36,18 +35,18 @@ func CreateJWT(userID uuid.UUID) (string, error) {
 	return jwt, nil
 }
 
-func CreateRefreshToken(userID int) (string, error) {
-	exp := time.Now().Add(time.Second * time.Duration(config.Envs.RefreshTokenExpirationInSeconds)).Unix()
+func CreateRefreshToken(userID uuid.UUID, secret string, durationSeconds int64) (string, error) {
+	exp := time.Now().Add(time.Second * time.Duration(durationSeconds)).Unix()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"sub": userID,
+			"sub": userID.String(),
 			"iss": "collab-board",
 			"exp": exp,
 			"iat": time.Now().Unix(),
 		})
 
-	rt, err := token.SignedString([]byte(config.Envs.RefreshTokenSecret))
+	rt, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +56,7 @@ func CreateRefreshToken(userID int) (string, error) {
 func IsAuthorized(requestToken string, secret string) (bool, error) {
 	_, err := jwt.Parse(requestToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(secret), nil
 	})
@@ -77,13 +76,13 @@ func GetTokenFromRequest(r *http.Request) (string, bool) {
 	return token, true
 }
 
-func ValidateToken(t string) (*jwt.Token, error) {
+func ValidateToken(t string, secret string) (*jwt.Token, error) {
 	return jwt.Parse(t, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
 
-		return []byte(config.Envs.JWTSecret), nil
+		return []byte(secret), nil
 	})
 }
 
@@ -92,10 +91,10 @@ func PermissionDenied(w http.ResponseWriter) {
 }
 
 func WithUserID(ctx context.Context, userID uuid.UUID) context.Context {
-	return context.WithValue(ctx, userKey, userID)
+	return context.WithValue(ctx, UserKey, userID)
 }
 
 func GetUserIDFromContext(ctx context.Context) (uuid.UUID, bool) {
-	userID, ok := ctx.Value(userKey).(uuid.UUID)
+	userID, ok := ctx.Value(UserKey).(uuid.UUID)
 	return userID, ok
 }

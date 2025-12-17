@@ -7,9 +7,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/mirkosisko-dev/api/db"
+	pool "github.com/mirkosisko-dev/api/db"
 	"github.com/mirkosisko-dev/api/db/sqlc"
-	"github.com/mirkosisko-dev/api/internal/api/service/auth"
+	"github.com/mirkosisko-dev/api/internal/handlers/auth"
 	"github.com/mirkosisko-dev/api/internal/types"
 	"github.com/mirkosisko-dev/api/utils"
 )

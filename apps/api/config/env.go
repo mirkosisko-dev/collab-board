@@ -16,9 +16,9 @@ type Config struct {
 	RefreshTokenSecret              string
 }
 
-var Envs = initConfig()
+var Envs = Load()
 
-func initConfig() Config {
+func Load() Config {
 	loadDotEnv()
 
 	return Config{
