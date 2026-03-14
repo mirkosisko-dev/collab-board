@@ -1,0 +1,9 @@
+table_name: CustomerOrders # This will FAIL - not snake_case!
+namespace: analytics
+schema:
+  - name: customerId # This will FAIL - not snake_case!
+    type: string
+  - name: order_date # This will PASS
+    type: timestamp
+  - name: TotalAmount # This will FAIL - not lowercase!
+    type: decimal
